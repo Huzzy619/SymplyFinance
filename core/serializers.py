@@ -61,6 +61,7 @@ class PasswordUpdateSerializer(serializers.Serializer):
 
         user = self.context["user"]
 
+        
         if not user.check_password(attrs["old_password"]):
             raise serializers.ValidationError({"message": "Invalid old password"})
 

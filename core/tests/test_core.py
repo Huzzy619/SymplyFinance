@@ -1,41 +1,174 @@
 import pytest
-from django.urls import reverse
 from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
+from django.core.management.utils import get_random_secret_key as random_password
+from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from model_bakery import baker
 from rest_framework import status
 from rest_framework.test import APIClient
-from model_bakery import baker
-
+from rest_framework_simplejwt.tokens import RefreshToken
 
 User = get_user_model()
 
 
 @pytest.mark.django_db
-class TestViews:
-    def test_forgot_password_view(self):
+class TestForgotPassword:
+    def test_valid_email_returns_200(self, api_client, get_user):
         url = reverse("forgot-password")
-        print(url)
-        client = APIClient()
-        data = {"email": "test@example.com"}
 
-        response = client.post("/accounts/forgot/password", data, format="json")
+        data = {"email": get_user().email}
 
-        # /accounts/forgot/password
+        response = api_client.post(url, data, format="json")
 
         assert response.status_code == status.HTTP_200_OK
-        # assert "message" in response.data
 
-    # def test_password_reset_confirm_view(self):
-    #     user = User.objects.create_user(username="testuser", email="test@example.com")
-    #     uid = "VGVzdFVzZXI="
-    #     token = "abcd1234"
-    #     url = reverse("password-reset-confirm", args=[uid, token])
-    #     client = APIClient()
-    #     data = {"password1": "newpassword", "password2": "newpassword"}
+    def test_invalid_email_returns_404(self, api_client, get_user):
+        url = reverse("forgot-password")
 
-    #     response = client.post(url, data, format="json")
+        data = {"email": "jargons" + get_user().email}
 
-    #     assert response.status_code == status.HTTP_200_OK
-    #     assert "message" in response.data
+        response = api_client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.django_db
+class TestPasswordResetConfirm:
+    bad_uid = "MjI1OTMwZTQtNzFlYy00NTU0LTgwM2ItZTg4NzU1MmNiZjA4"
+    bad_token = "bq8314-c1d590c5d513f620a77224d2bd60e754"
+
+    def test_password_reset_confirm_return_200(self, api_client, get_user):
+        user = get_user()
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+
+        url = reverse("password-reset-confirm", args=[uid, token])
+        password = random_password()
+        data = {"password1": password, "password2": password}
+
+        response = api_client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_invalid_token_return_400(self, api_client, get_user):
+        # Correct uid but invalid_tokens
+        uid = urlsafe_base64_encode(force_bytes(get_user().pk))
+
+        url = reverse("password-reset-confirm", args=[uid, self.bad_token])
+        password = random_password()
+        data = {"password1": password, "password2": password}
+
+        response = api_client.post(url, data, format="json")
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_no_user_found_return_404(self, api_client):
+        url = reverse("password-reset-confirm", args=[self.bad_uid, self.bad_token])
+
+        password = random_password()
+        data = {"password1": password, "password2": password}
+        response = api_client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert response.data["status"] is False
+
+    def test_if_password_does_not_pass_validation_returns_403(
+        self, api_client, get_user
+    ):
+        user = get_user()
+
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+
+        url = reverse("password-reset-confirm", args=[uid, token])
+
+        # Put a cheeky password that would fail validation
+        password = "1234"
+
+        data = {"password1": password, "password2": password}
+
+        response = api_client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+@pytest.mark.django_db
+class TestPasswordUpdate:
+    def test_password_update_return_200(self, api_client, get_user):
+        url = reverse("password-update")
+
+        user = get_user(save=True)
+
+        get_user()
+
+        api_client.force_authenticate(user=user)
+
+        data = {
+            "old_password": "simple-password",
+            "password1": "newpassword123",
+            "password2": "newpassword123",
+        }
+
+        response = api_client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_invalid_old_password_return_400(self, api_client, get_user):
+        url = reverse("password-update")
+
+        api_client.force_authenticate(user=get_user())
+
+        data = {
+            "old_password": "wrong password",
+            "password1": "newpassword123",
+            "password2": "newpassword123",
+        }
+
+        response = api_client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert True is True
+
+
+
+@pytest.mark.django_db
+class TestLogin:
+    def test_successful_login_return_200(self, api_client, get_user):
+        url = reverse("login")
+
+        user = get_user(save=True)
+        data = {"email": user.email, "password": "simple-password"}
+
+        response = api_client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_200_OK
+        assert "status" in response.data
+        assert "tokens" in response.data
+        assert "user" in response.data
+
+    def test_invalid_login_return_401(self, api_client, get_user):
+        url = reverse("login")
+
+        user = get_user(save=True)
+        data = {"email": user.email, "password": "wrong-password"}
+
+        response = api_client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        assert response.data["status"] is False
+
+    def test_refresh_token_return_200(self, api_client, get_user):
+        url = reverse("token-refresh")
+        refresh_token = "refresh_token"
+
+        refresh_token = RefreshToken.for_user(get_user())
+        data = {"refresh": str(refresh_token)}
+
+        response = api_client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_200_OK
+        assert "access" in response.data
 
     # def test_google_social_auth_view(self):
     #     url = reverse("google-social-auth")
@@ -45,41 +178,4 @@ class TestViews:
     #     response = client.post(url, data, format="json")
 
     #     assert response.status_code == status.HTTP_200_OK
-    #     assert "status" in response.data
-
-    # def test_password_update_view(self):
-    #     url = reverse("password-update")
-    #     user = baker.make(User)
-
-    #     client = APIClient()
-    #     client.force_authenticate(user=user)
-    #     data = {"password1": "newpassword", "password2": "newpassword"}
-
-    #     response = client.post(url, data, format="json")
-
-    #     assert response.status_code == status.HTTP_200_OK
-    #     assert "message" in response.data
-
-    # def test_login_view(self):
-    #     url = reverse("login")
-    #     client = APIClient()
-    #     data = {"email": "test@example.com", "password": "password"}
-
-    #     response = client.post(url, data, format="json")
-
-    #     assert response.status_code == status.HTTP_200_OK
-    #     assert "status" in response.data
-    #     assert "tokens" in response.data
-    #     assert "user" in response.data
-
-    # def test_refresh_view(self):
-    #     url = reverse("token-refresh")
-    #     client = APIClient()
-    #     refresh_token = "refresh_token"
-    #     data = {"refresh": refresh_token}
-
-    #     response = client.post(url, data, format="json")
-
-    #     assert response.status_code == status.HTTP_200_OK
-    #     assert "access" in response.data
     #     assert "status" in response.data

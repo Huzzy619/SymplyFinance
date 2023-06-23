@@ -24,6 +24,16 @@ from .serializers import (
     RegisterSerializer,
 )
 
+class Testing(GenericAPIView):
+
+    def get(self, request):
+
+        from django.urls import reverse
+        
+        print(reverse("forgot-password"))
+
+        return Response("ok")
+    
 class RegisterView(GenericAPIView):
     """
     Create an account
@@ -64,6 +74,7 @@ class ForgotPasswordView(GenericAPIView):
             domain = config("FRONTEND_URL", request.get_host())
             token = default_token_generator.make_token(user)
 
+            print(uid, token)
             link = f"{request.scheme}://{domain}/account/reset/password/confirm/{uid}/{token}"
 
             send_mail(
@@ -73,7 +84,8 @@ class ForgotPasswordView(GenericAPIView):
                 from_email="admin@studebt.com",
             )
             return Response(
-                {"message": "email containing link to reset password has been sent"}
+                {"message": "email containing link to reset password has been sent"}, 
+                status=status.HTTP_200_OK
             )
         except get_user_model().DoesNotExist:
             pass
@@ -119,7 +131,8 @@ class PasswordResetConfirm(GenericAPIView):
         user.save()
 
         return Response(
-            {"message": "success", "detail": "password changed successfully"}
+            {"message": "success", "detail": "password changed successfully"}, 
+            status=status.HTTP_200_OK
         )
 
     def get_user(self, uidb64):
