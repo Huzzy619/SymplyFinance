@@ -17,4 +17,8 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
+# Set appropriate permissions for the directory
+USER root
+RUN chown -R app:app /app
+USER app
 
