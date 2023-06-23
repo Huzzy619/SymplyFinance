@@ -14,6 +14,7 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
+from django.contrib.auth.signals import user_logged_in
 
 from .serializers import (
     ForgotPasswordSerializer,
@@ -247,7 +248,7 @@ class LoginView(GenericAPIView):
 
         refresh = RefreshToken.for_user(user)
 
-        # user_logged_in.send_robust(get_user_model(), user=user)
+        user_logged_in.send_robust(get_user_model(), user=user)
 
         return Response(
             {
