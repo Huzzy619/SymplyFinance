@@ -17,5 +17,4 @@ urlpatterns = [
         views.PasswordResetConfirm.as_view(),
         name="password-reset-confirm",
     ),
-    path("test/", views.Testing.as_view(), name="test"),
 ]

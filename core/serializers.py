@@ -1,11 +1,12 @@
+import stripe
 from decouple import config
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, password_validation
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from rest_framework import serializers
-import stripe
+
 from .utils import Google, register_social_user
 
-stripe.ApplePayDomain
 
 class RegisterSerializer(serializers.Serializer):
     first_name = serializers.CharField(
@@ -13,16 +14,29 @@ class RegisterSerializer(serializers.Serializer):
     )
     last_name = serializers.CharField(allow_blank=True, allow_null=True, required=False)
     email = serializers.EmailField()
-    NIN = serializers.CharField(allow_blank=True, allow_null=True, required=False)
+    phone = serializers.CharField()
+    address = serializers.CharField()
     password = serializers.CharField()
 
     def save(self, **kwargs):
-        first_name, last_name, email, password = self.validated_data.values()
+        (
+            first_name,
+            last_name,
+            email,
+            phone,
+            address,
+            password,
+        ) = self.validated_data.values()
+        
         try:
+            password_validation.validate_password(password)
+
             user = get_user_model().objects._create_user(
                 first_name=first_name,
                 last_name=last_name,
                 email=email,
+                phone=phone,
+                address=address,
                 password=password,
             )
         except IntegrityError:
@@ -32,6 +46,8 @@ class RegisterSerializer(serializers.Serializer):
                     "status": False,
                 }
             )
+        except ValidationError as e:
+            raise serializers.ValidationError(detail=e.messages)
 
         return user
 
@@ -61,7 +77,6 @@ class PasswordUpdateSerializer(serializers.Serializer):
 
         user = self.context["user"]
 
-        
         if not user.check_password(attrs["old_password"]):
             raise serializers.ValidationError({"message": "Invalid old password"})
 
@@ -98,14 +113,16 @@ class GoogleSocialAuthSerializer(serializers.Serializer):
                 {"message": str(identifier), "status": False}
             )
 
-        # Compare the google client_id returned 
+        # Compare the google client_id returned
         if user_data["aud"] != config("GOOGLE_CLIENT_ID"):
             raise serializers.ValidationError(
                 {"message": "Invalid credentials", "status": False}
             )
 
-        email = user_data["email"]
-        first_name = user_data["given_name"]
-        last_name = user_data["family_name"]
+        first_name, last_name, email = (
+            user_data["given_name"],
+            user_data["family_name"],
+            user_data["email"],
+        )
 
-        return register_social_user(email, first_name, last_name )
+        return register_social_user(email, first_name, last_name)

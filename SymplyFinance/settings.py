@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "debug_toolbar",
     "drf_spectacular", 
+    "treblle",
 
     "core",
     "finance",
@@ -67,8 +68,14 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'treblle.middleware.TreblleMiddleware',
     "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
+
+TREBLLE_INFO = {
+'api_key': "aa5P2xUuhOEz6c0GGYcdwGoa3qA8pNaL",
+'project_id': "2Ay4B6PS98YnBKeP",
+}
 
 ROOT_URLCONF = "SymplyFinance.urls"
 
@@ -112,7 +119,7 @@ INTERNAL_IPS = [
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",

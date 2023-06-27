@@ -25,15 +25,6 @@ from .serializers import (
     RegisterSerializer,
 )
 
-class Testing(GenericAPIView):
-
-    def get(self, request):
-
-        from django.urls import reverse
-        
-        print(reverse("forgot-password"))
-
-        return Response("ok")
     
 class RegisterView(GenericAPIView):
     """

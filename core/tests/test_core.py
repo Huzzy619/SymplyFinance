@@ -4,14 +4,57 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.management.utils import get_random_secret_key as random_password
 from django.urls import reverse
 from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from model_bakery import baker
+from django.utils.http import  urlsafe_base64_encode
 from rest_framework import status
-from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 
 User = get_user_model()
 
+
+# Create register test first_name,
+            
+
+
+@pytest.mark.django_db
+class TestRegister:
+    url = reverse("register")
+    data = {
+            "first_name":"test_first", 
+            "last_name":"test_last",
+            "email": "user@example.com",
+            "phone": "+2349066757334",
+            "address": "This is my address",
+            "password": "simple-password"
+         }
+    
+    def test_successful_registration_return_200(self, api_client):
+         
+         
+         response = api_client.post(self.url, self.data)
+
+         assert response.status_code == status.HTTP_201_CREATED
+    
+    def test_user_already_exists_return_400(self, api_client, get_user):
+
+        user = get_user(save = True)
+
+        data  = self.data.update({"email":user.email})
+        
+        response = api_client.post(self.url, data)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+    
+    def test_invalid_password_return_400(self, api_client):
+        
+        data  = self.data.update({"password": "1234"})
+        response = api_client.post(self.url, data)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        
+
+
+          
 
 @pytest.mark.django_db
 class TestForgotPassword:
@@ -129,7 +172,6 @@ class TestPasswordUpdate:
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert True is True
-
 
 
 @pytest.mark.django_db
