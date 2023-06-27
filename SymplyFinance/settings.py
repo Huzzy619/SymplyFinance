@@ -28,7 +28,7 @@ SECRET_KEY = "django-insecure-rvb*i$mawun(439_)@rupf_iny3uv0)w0z98=-2fc$7oc)xu*5
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"] # symplyfinance.cleverapps.io
 
 
 # Application definition
