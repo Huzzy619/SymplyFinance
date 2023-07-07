@@ -4,7 +4,8 @@ services:
     build: .
     ports:
       - "8000:8000"
-    command: ./docker-compose-entry.sh
+    command: "gunicorn SymplyFinance.wsgi 0.0.0.0:8000"
     volumes:
       - .:/app
-    
+    container_name: symply
+    image: symplyfi

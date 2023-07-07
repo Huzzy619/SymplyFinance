@@ -5,7 +5,7 @@ __pycache__/
 .pytest_cache/
 # C extensions
 *.so
-
+.pyenv
 # Distribution / packaging
 .Python
 build/

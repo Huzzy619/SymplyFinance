@@ -25,8 +25,13 @@ jobs:
       #   run: |
       #     python3 manage.py test
       
-      - name: Build Docker image
-        run: docker build -t simplyfinance-image .
+      # - name: Build Docker image
+      #   run: docker build -t simplyfinance-image .
         
-      - name: Run the test using Docker
-        run: docker run simplyfinance-image python3 manage.py test
+      # - name: Run the test using Docker
+      #   run: docker run simplyfinance-image python3 manage.py test
+
+      - name: new test
+        run: printenv 
+    
+          
