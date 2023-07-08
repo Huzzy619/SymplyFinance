@@ -6,7 +6,7 @@ DEBUG = config("DEBUG", False, cast = bool)
 
 SECRET_KEY = config('SECRET_KEY', SECRET_KEY)
 
-ALLOWED_HOSTS = ["warrenintel.com", "symplyfinance.co"]
+ALLOWED_HOSTS = ["warrenintel.com", "symplyfinance.co", "symplyfinance.up.railway.app"]
 
 CSRF_TRUSTED_ORIGINS = ["https://" + host for host in ALLOWED_HOSTS]
 
