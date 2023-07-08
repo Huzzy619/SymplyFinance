@@ -15,16 +15,17 @@ from langchain.schema import HumanMessage, SystemMessage
 from langchain.vectorstores import Chroma
 from langchain.embeddings import AlephAlphaAsymmetricSemanticEmbedding, FakeEmbeddings
 # import tiktoken
+from decouple import config
 
 # Load environment variables
 _ = load_dotenv(find_dotenv())
-openai.api_key = "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"
+openai.api_key = config("OPENAI_API_KEY", "") 
 
 os.environ["GOOGLE_CSE_ID"] = "55c1332fff9a840f0"
 os.environ["GOOGLE_API_KEY"] = "AIzaSyCU6_DO5JWubdbBolU-ciATkPOclNCHTEI"
 
 def finance(input):
-    llm = LangchainOpenAI(temperature=0.1, openai_api_key="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")
+    llm = LangchainOpenAI(temperature=0.1, openai_api_key=config("OPENAI_API_KEY", "") )
     search = GoogleSearchAPIWrapper()
     # Creating a document loader
     loader = PyPDFLoader('Goldman-Sachs-annual-report-2022.pdf')
@@ -50,7 +51,7 @@ def finance(input):
     ]
     agent = initialize_agent(tools, llm, agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION, verbose=True)
     # Set up ChatOpenAI model
-    chat = ChatOpenAI(temperature=0, openai_api_key="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")
+    chat = ChatOpenAI(temperature=0, openai_api_key=config("OPENAI_API_KEY", "") )
     # Defining investment-related system messages
     investment_system_messages = [
         SystemMessage(content="You are a friendly Stock/Financial analyst that  provides a detailed investment advice."),
