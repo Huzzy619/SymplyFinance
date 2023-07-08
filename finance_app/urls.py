@@ -4,6 +4,6 @@ from . import views
 
 
 urlpatterns = [
-    path("search/", views.AIView.as_view(), name="AI")
+    path("", views.AIView.as_view(), name="AI")
     
 ]

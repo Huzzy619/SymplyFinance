@@ -1,6 +1,6 @@
 from .settings import *
 
-import dj_database_url
+# import dj_database_url
 
 DEBUG = config("DEBUG", False, cast = bool)
 
