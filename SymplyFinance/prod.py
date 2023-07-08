@@ -10,12 +10,24 @@ ALLOWED_HOSTS = ["warrenintel.com", "symplyfinance.co", "symplyfinance.up.railwa
 
 CSRF_TRUSTED_ORIGINS = ["https://" + host for host in ALLOWED_HOSTS]
 
+# DATABASES = {
+#     'default': dj_database_url.config(
+#         conn_max_age=600,
+#         conn_health_checks=True,
+#     ),
+# }
+
 DATABASES = {
-    'default': dj_database_url.config(
-        conn_max_age=600,
-        conn_health_checks=True,
-    ),
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME':  config('PGDATABASE'),
+        'USER': config('PGUSER'),
+        'PASSWORD': config('PGPASSWORD'),
+        'HOST': config('PGHOST'),
+        'PORT': config('PGPORT'),
+    }
 }
+
 
 
 STORAGES = {
