@@ -27,7 +27,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/v1/accounts/", include("core.urls")),
-    path("api/v1/search/", include("finance_app.urls")),
+    path("api/v1/search", include("finance_app.urls")),
 
     path("__debug__/", include("debug_toolbar.urls")), 
     # re_path("api/(?P<version>(v1|v2))/ai/", include("finance_app.urls")),
@@ -38,7 +38,7 @@ urlpatterns = [
 
 urlpatterns += [
     # YOUR PATTERNS
-    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("api/schema", SpectacularAPIView.as_view(), name="schema"),
     # Optional UI:
     path(
         "",
