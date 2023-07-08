@@ -1,0 +1,6 @@
+[build]
+builder = "dockerfile"
+buildCommand = "docker build -t symply ."
+
+[deploy]
+startCommand = "docker run -p 8000:8000 symply"

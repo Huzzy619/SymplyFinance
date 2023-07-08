@@ -54,7 +54,7 @@ ENV OPENAI_API_KEY=$OPENAI_API_KEY
 ENV DEBUG=$DEBUG
 ENV DATABASE_URL=$DATABASE_URL
 ENV STRIPE_SECRET_KEY=$STRIPE_SECRET_KEY
-ENV DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE
+ENV DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-SymplyFinance.settings}
 ENV PGDATABASE=$PGDATABASE
 ENV PGUSER=$PGUSER
 ENV PGPASSWORD=$PGPASSWORD
@@ -68,7 +68,7 @@ RUN python3 manage.py migrate
 EXPOSE 8000
 
 
-# CMD ["gunicorn", "--bind", ":8000", "--workers", "3", "SymplyFinance.wsgi:application"]
-CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["gunicorn", "--bind", ":8000", "--workers", "3", "SymplyFinance.wsgi:application"]
+# CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
 
 
