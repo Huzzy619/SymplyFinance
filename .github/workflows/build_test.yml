@@ -13,25 +13,22 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version:  "3.11"
-          # cache: 'pip' # caching pip dependencies
+          cache: 'pip' # caching pip dependencies
 
 
-      # - name: Install dependencies
-      #   run: |
-      #     python -m pip install --upgrade pip
-      #     pip install -r requirements.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
       
-      # - name: Run the test
-      #   run: |
-      #     python3 manage.py test
+      - name: Run the test
+        run: |
+          python3 manage.py test
       
       # - name: Build Docker image
       #   run: docker build -t simplyfinance-image .
         
       # - name: Run the test using Docker
       #   run: docker run simplyfinance-image python3 manage.py test
-
-      - name: new test
-        run: printenv 
     
           

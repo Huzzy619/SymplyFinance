@@ -65,8 +65,9 @@ RUN python3  manage.py collectstatic --no-input
 
 RUN python3 manage.py migrate
 
-EXPOSE 8080
+EXPOSE 8000
 
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "SymplyFinance.wsgi"]
+
+CMD ["gunicorn", "--bind", ":8000", "--workers", "3", "SymplyFinance.wsgi:application"]
 
 
