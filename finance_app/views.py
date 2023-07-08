@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
-
+from requests.exceptions import Timeout
 from utils import finance
 
 from .models import Blacklist
@@ -19,6 +19,11 @@ class AIView(GenericAPIView):
             if self.check_ip_address(request):
                 try:
                     response = finance(serializer.validated_data["search"])
+                except Timeout:
+                    return Response({"status": False, "message": "Request Timed out"})
+                except ConnectionError:
+                    Response({"message":"Failed to establish a connection"})
+                
                 except Exception as e:
                     return Response(
                         {"response": "AI is unavailable",
