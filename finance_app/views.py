@@ -1,8 +1,8 @@
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
-from requests.exceptions import Timeout
 from utils import finance
+from gunicorn.errors import WorkerTimeout
 
 from .models import Blacklist
 from .serializers import AISerializer
@@ -19,10 +19,10 @@ class AIView(GenericAPIView):
             if self.check_ip_address(request):
                 try:
                     response = finance(serializer.validated_data["search"])
-                except Timeout:
+                except WorkerTimeout:
                     return Response({"status": False, "message": "Request Timed out"})
                 except ConnectionError:
-                    Response({"message":"Failed to establish a connection"})
+                    Response({"message":"Failed to establish a connection", "status": False,})
                 
                 except Exception as e:
                     return Response(
@@ -31,11 +31,12 @@ class AIView(GenericAPIView):
                         status=status.HTTP_408_REQUEST_TIMEOUT,
                     )
 
-                return Response({"response": response}, status=status.HTTP_200_OK)
+                return Response({"response": response, "status":True}, status=status.HTTP_200_OK)
 
             return Response(
                 {
-                    "response": "You have exceeded your free trials, register and login to continue"
+                    "response": "You have exceeded your free trials, register and login to continue", 
+                    "status": False,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
