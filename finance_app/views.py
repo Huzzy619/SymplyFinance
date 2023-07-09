@@ -13,30 +13,32 @@ class AIView(GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        if not request.user.is_authenticated:
-            if self.check_ip_address(request):
-                try:
-                    response = finance(serializer.validated_data["search"])
+        try:
+            response = finance(serializer.validated_data["search"])
                 
-                except ConnectionError:
+        except ConnectionError:
                     Response({"message":"Failed to establish a connection", "status": False})
                 
-                except Exception as e:
-                    return Response(
+        except Exception as e:
+            return Response(
                         {"response": "AI is unavailable",
                          "message": str(e)},
                         status=status.HTTP_408_REQUEST_TIMEOUT,
                     )
 
-                return Response({"response": response, "status":True}, status=status.HTTP_200_OK)
+        return Response({"response": response, "status":True}, status=status.HTTP_200_OK)
+    
+        # if not request.user.is_authenticated:
+        #     if self.check_ip_address(request):
+                
 
-            return Response(
-                {
-                    "response": "You have exceeded your free trials, register and login to continue", 
-                    "status": False,
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        #     return Response(
+        #         {
+        #             "response": "You have exceeded your free trials, register and login to continue", 
+        #             "status": False,
+        #         },
+        #         status=status.HTTP_400_BAD_REQUEST,
+        #     )
 
     def check_ip_address(self, request):
         xff = request.META.get("HTTP_X_FORWARDED_FOR")

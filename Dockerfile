@@ -68,6 +68,6 @@ RUN python3 manage.py migrate
 EXPOSE 8000
 
 
-CMD ["gunicorn", "--bind", ":8000", "--workers", "3","--timeout", "300", "SymplyFinance.wsgi:application"]
+CMD ["gunicorn", "--bind", ":8000", "--workers", "3","--timeout", "300", "--loglevel","error","SymplyFinance.wsgi:application"]
 
 
